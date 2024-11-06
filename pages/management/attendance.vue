@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-title-md2 font-semibold text-black">Attendance Logs</h2>
+            <h2 class="text-title-md2 font-semibold text-black">Attendance</h2>
         </div>
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex gap-3">
@@ -18,21 +18,6 @@
                 placeholder="Filter Year"
                 :customClasses="['bg-blue-200', 'placeholder-blue-700', 'text-sm', 'font-semibold', 'py-2', 'hover:bg-blue-300']"
                 ></SelectInput>
-            </div>
-            <div class="flex">
-                <input
-                type="file"
-                @change="handleFileUpload"
-                ref="fileInput"
-                accept=".xlsx, .xls"
-                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-200 file:text-blue-700 hover:file:bg-blue-300"
-                />
-                <SuccessButton
-                v-show="selectedFile != null"
-                type="button" @click="submitFile"
-                >
-                    Submit
-                </SuccessButton>
             </div>
         </div>
         <div v-if="hasAttendanceRecords" class="card rounded-md border border-stroke bg-white shadow-md">
@@ -63,7 +48,41 @@
                             >
                                 <div class="flex justify-center">
                                     <div class="form-check form-check-inline text-xs">
-                                        <span>{{ getAttendanceTime(employee.id, date) }}</span>
+                                        <div v-if="isEmployeeLate(employee.id, date)" class="flex items-center justify-center space-x-1">
+                                            <div
+                                                class="w-2 h-2 rounded-full bg-dangerHover">
+                                            </div>
+                                            <p>
+                                            {{ late(employee.id, date) === 0
+                                                ? late(employee.id, date)
+                                                : `${late(employee.id, date)} min. late`
+                                            }}
+                                            </p>
+                                        </div>
+                                        <div v-if="isEmployeeUnderTime(employee.id, date)" class="flex items-center justify-center space-x-1">
+                                            <div
+                                                class="w-2 h-2 rounded-full bg-info">
+                                            </div>
+                                            <p>
+                                            {{ underTime(employee.id, date) === 0
+                                                ? underTime(employee.id, date)
+                                                : `${underTime(employee.id, date)} min. undertime`
+                                            }}
+                                            </p>
+                                        </div>
+                                        <div v-if="!isEmployeeLate(employee.id, date) && !isEmployeeUnderTime(employee.id, date) && !isAbsent(employee.id, date)"
+                                            class="flex items-center justify-center space-x-1">
+                                            <div
+                                                class="w-2 h-2 rounded-full bg-success">
+                                            </div>
+                                            <p>on time</p>
+                                        </div>
+                                        <div v-if="isAbsent(employee.id, date)" class="flex items-center justify-center space-x-1">
+                                            <div
+                                                class="w-2 h-2 rounded-full bg-danger">
+                                            </div>
+                                            <p>absent</p>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -84,7 +103,7 @@
             </div>
         </div>
 
-        <EmptyData v-else :data="'Logs'"></EmptyData>
+        <EmptyData v-else :data="'Data'"></EmptyData>
 
     </div>
 </template>
@@ -109,7 +128,6 @@ export default {
             to: 0,
             totalItems: 0,
             totalPages: 0,
-            selectedFile: null,
             employees: [],
             dates: [],
             filterMonth: '',
@@ -194,16 +212,6 @@ export default {
                 });
         },
 
-        async fetchLatestMonthAndYear() {
-            try {
-                const response = await this.$axios.$get('/v1/attendance/latest-month-year');
-                this.filterMonth = response.latestMonth; // Assuming the API returns the latest month
-                this.filterYear = response.latestYear; // Assuming the API returns the latest year
-            } catch (error) {
-                console.error('Error fetching latest month and year:', error);
-            }
-        },
-
         initializeMonthOptions() {
             this.monthList = this.month.map((m) => ({
                     id: m.value,
@@ -222,80 +230,64 @@ export default {
             }
         },
 
-        handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                this.selectedFile = file;
-            }
+        isEmployeeLate(empId, date) {
+            const attendance = this.employees
+                .find(emp => emp.id === empId)
+                ?.attendance_records.find(record => record.date === date);
+
+            return attendance ? attendance.isLate : false;
         },
 
-        async submitFile() {
-            if (!this.selectedFile) {
-                alert('Please select a file first.');
-                return;
-            }
-
-            try {
-                const formData = new FormData();
-                formData.append('file', this.selectedFile);
-
-                const response = await this.$axios.post('/v1/import/logs', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-
-                if(response.data.status === 201) {
-                    this.$toast.success('File uploaded successfully!');
-                    this.selectedFile = null;
-                    this.$refs.fileInput.value = null;
-                    this.attandanceSheet();
-                }
-            } catch (error) {
-                this.$toast.error('Error uploading file.');
-                this.selectedFile = null;
-                this.$refs.fileInput.value = null;
-            }
+        late(empId, date) {
+            const timeIn = this.getLateDuration(empId, date);
+            return timeIn;
         },
-        formatTimeTo12Hour(time) {
-            if (time === "00:00:00" || time === null) return "-";
 
-            const [hours, minutes] = time.split(":");
-            const hours12 = hours % 12 || 12;
-            const ampm = hours >= 12 ? "PM" : "AM";
-
-            return `${hours12}:${minutes} ${ampm}`;
-        },
-        getAttendanceTimeIn(empId, date) {
+        getLateDuration(empId, date) {
             const attendance = this.employees
                 .find(emp => emp.id === empId)
                 ?.attendance_records.find(record => record.date === date);
 
             if (attendance) {
-                const timeIn = attendance.time_in;
-                return this.formatTimeTo12Hour(timeIn);
+                const timeIn = attendance.lateDuration;
+                return timeIn;
             }
             return "-";
         },
 
-        getAttendanceTimeOut(empId, date) {
+        isEmployeeUnderTime(empId, date) {
+            const attendance = this.employees
+                .find(emp => emp.id === empId)
+                ?.attendance_records.find(record => record.date === date);
+
+            return attendance ? attendance.isUnderTime : false;
+        },
+
+        underTime(empId, date) {
+            const timerOut = this.getUnderTimeDuration(empId, date);
+            return timerOut;
+        },
+
+        getUnderTimeDuration(empId, date) {
             const attendance = this.employees
                 .find(emp => emp.id === empId)
                 ?.attendance_records.find(record => record.date === date);
 
             if (attendance) {
-                const timeOut = attendance.time_out;
-                return this.formatTimeTo12Hour(timeOut);
+                const timeOut = attendance.undertimeDuration;
+                return timeOut;
             }
             return "-";
         },
 
-        getAttendanceTime(empId, date) {
-            const timeIn = this.getAttendanceTimeIn(empId, date);
-            const timeOut = this.getAttendanceTimeOut(empId, date);
+        isAbsent(empId, date) {
+            const attendance = this.employees
+                .find(emp => emp.id === empId)
+                ?.attendance_records.find(record => record.date === date);
 
-            return `${timeIn} | ${timeOut}`;
+            return attendance ? attendance.isAbsent : false;
         },
+
 
         setPage(page) {
             this.page = page

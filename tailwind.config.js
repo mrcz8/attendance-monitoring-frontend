@@ -52,7 +52,8 @@ module.exports = {
             successHover: '#73e0a2',
             danger: '#e53935',
             dangerHover: '#f87171',
-            warning: '#FFA70B'
+            warning: '#FFA70B',
+            info: '#00e4f8'
         },
         fontSize: {
             'title-xxl': ['44px', '55px'],
