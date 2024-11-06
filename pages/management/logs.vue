@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-title-md2 font-semibold text-black">Lates</h2>
+            <h2 class="text-title-md2 font-semibold text-black">Attendance Logs</h2>
         </div>
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex gap-3">
@@ -192,16 +192,6 @@ export default {
 
                     this.dates = Array.from(datesSet).sort();
                 });
-        },
-
-        async fetchLatestMonthAndYear() {
-            try {
-                const response = await this.$axios.$get('/v1/attendance/latest-month-year');
-                this.filterMonth = response.latestMonth; // Assuming the API returns the latest month
-                this.filterYear = response.latestYear; // Assuming the API returns the latest year
-            } catch (error) {
-                console.error('Error fetching latest month and year:', error);
-            }
         },
 
         initializeMonthOptions() {

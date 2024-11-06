@@ -143,13 +143,13 @@ export default {
                         route: '#',
                         children: [
                         {
-                            label: 'Attendance Logs',
-                            route: '/management',
+                            label: 'Attendance',
+                            route: '/management/attendance',
                         },
                         {
-                            label: 'Late',
-                            route: '/management/lates',
-                        },
+                            label: 'Logs',
+                            route: '/management/logs',
+                        }
                     ]
                     },
                 )
