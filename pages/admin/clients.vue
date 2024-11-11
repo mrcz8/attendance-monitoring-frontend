@@ -12,6 +12,7 @@
                 Add Client
             </Button>
         </div>
+        <isLoading v-if="isLoading" />
         <Table :tableHeader="myHeader" :tableData="myData" :editItem="editItem" :deactivateItem="deactivateItem">
             <template v-slot:action-buttons="{ item }">
                 <div class="items-center space-x-3.5 relative">
@@ -148,6 +149,7 @@ import DropDownButton from '../../components/Buttons/DropDownButton.vue';
 import Modal from '../../components/Modal.vue';
 import InputText from '../../components/Forms/InputText.vue';
 import Pagination from '../../components/Pagination/Pagination.vue';
+import isLoading from '../../components/isLoading.vue';
 
 export default {
     components: {
@@ -159,7 +161,8 @@ export default {
         DropDownButton,
         Modal,
         InputText,
-        Pagination
+        Pagination,
+        isLoading
     },
     layout: 'default',
     data() {
@@ -184,6 +187,7 @@ export default {
                 'Status',
             ],
             myData: [],
+            isLoading: true,
         };
     },
     computed: {
@@ -205,6 +209,7 @@ export default {
     },
     methods: {
         async clientList() {
+            this.isLoading = true;
             const query = {
                 q: this.$store.state.client.q,
                 page: this.$store.state.client.page,
@@ -238,6 +243,9 @@ export default {
                             : 'bg-danger text-white rounded-2xl flex justify-center items-center w-25 px-2 py-1',
                         };
                     });
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         addClient() {

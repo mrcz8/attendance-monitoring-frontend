@@ -12,6 +12,7 @@
                 Add Department
             </Button>
         </div>
+        <isLoading v-if="isLoading" />
         <Table v-if="this.myData.length > 0" :tableHeader="myHeader" :tableData="myData">
             <template v-slot:action-buttons="{ item }">
                 <div class="flex items-center space-x-3.5">
@@ -111,6 +112,7 @@ import Modal from '../../components/Modal.vue';
 import InputText from '../../components/Forms/InputText.vue';
 import MultiSelectDropDown from '../../components/Forms/MultiSelectDropDown.vue';
 import EmptyData from '../../components/EmptyData.vue';
+import isLoading from '../../components/isLoading.vue';
 
 export default {
     components: {
@@ -121,7 +123,8 @@ export default {
         Modal,
         InputText,
         MultiSelectDropDown,
-        EmptyData
+        EmptyData,
+        isLoading
     },
     layout: 'default',
     data() {
@@ -141,7 +144,8 @@ export default {
             optionsList: [],
             isEditMode: false,
             deleteModal: false,
-            itemId: ''
+            itemId: '',
+            isLoading: true,
         };
     },
     computed: {
@@ -163,6 +167,7 @@ export default {
     },
     methods: {
         async departmentList() {
+            this.isLoading = true;
             const query = {
                 q: this.$store.state.client.q,
                 page: this.$store.state.pagination.page,
@@ -191,6 +196,9 @@ export default {
                             ).join('<br>')
                         };
                     });
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         async shiftList() {

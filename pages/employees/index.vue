@@ -4,6 +4,21 @@
             <h2 class="text-title-md2 font-semibold text-black">
                 Employees
             </h2>
+        </div>
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <SuccessButton
+            type="button"
+            :isButton="true"
+            @click="generateSchedule"
+            >
+                <template v-if="generating">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Generating...
+                </template>
+                <template v-else>
+                    Generate Schedule
+                </template>
+            </SuccessButton>
             <Button
             type="button"
             :isButton="true"
@@ -12,6 +27,7 @@
                 Add Employee
             </Button>
         </div>
+        <isLoading v-if="isLoading" />
         <Table v-if="this.myData.length > 0"  :tableHeader="myHeader" :tableData="myData">
             <template v-slot:action-buttons="{ item }">
                 <div class="flex items-center space-x-3.5">
@@ -117,6 +133,8 @@ import InputText from '../../components/Forms/InputText.vue';
 import SelectInput from '../../components/Forms/SelectInput.vue';
 import deptShift from '../../mixins/dept-shift';
 import EmptyData from '../../components/EmptyData.vue';
+import isLoading from '../../components/isLoading.vue';
+import SuccessButton from '../../components/Buttons/SuccessButton.vue';
 
 export default {
     mixins: [ deptShift ],
@@ -128,7 +146,9 @@ export default {
         Modal,
         InputText,
         SelectInput,
-        EmptyData
+        EmptyData,
+        isLoading,
+        SuccessButton
     },
     layout: 'default',
     data() {
@@ -152,6 +172,8 @@ export default {
                 'Shift',
             ],
             myData: [],
+            isLoading: true,
+            generating: false
         };
     },
     computed: {
@@ -173,6 +195,7 @@ export default {
     },
     methods: {
         async employeeList() {
+            this.isLoading = true;
             const query = {
                 q: this.$store.state.client.q,
                 page: this.$store.state.client.page,
@@ -200,6 +223,9 @@ export default {
                             Shift: item.shift?.name,
                         };
                     });
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         addEmployee() {
@@ -293,6 +319,26 @@ export default {
                         console.log(err);
                     });
             }
+        },
+        generateSchedule() {
+            this.generating = true;
+            this.$axios
+                .$post(`/v1/employee/generate`, {}, { responseType: 'blob' })
+                .then((response) => {
+                    const url = window.URL.createObjectURL(new Blob([response]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'AttSetting.xls');
+                    document.body.appendChild(link);
+                    link.click();
+                    // this.$toast.success('Employee schedule Generated');
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.generating = false;
+                });
         },
         setPage(page) {
             this.page = page
