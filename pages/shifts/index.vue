@@ -29,6 +29,7 @@
                 </Button>
             </div>
         </div>
+        <isLoading v-if="isLoading" />
         <Table v-if="this.myData.length > 0" :tableHeader="myHeader" :tableData="myData">
             <template v-slot:action-buttons="{ item }">
                 <div class="flex items-center space-x-3.5">
@@ -139,6 +140,7 @@ import SuccessButton from '../../components/Buttons/SuccessButton.vue';
 import Modal from '../../components/Modal.vue';
 import InputText from '../../components/Forms/InputText.vue';
 import EmptyData from '../../components/EmptyData.vue';
+import isLoading from '../../components/isLoading.vue';
 
 export default {
     components: {
@@ -149,7 +151,8 @@ export default {
         SuccessButton,
         Modal,
         InputText,
-        EmptyData
+        EmptyData,
+        isLoading
     },
     layout: 'default',
     data() {
@@ -171,6 +174,7 @@ export default {
             ],
             myData: [],
             selectedFile: null,
+            isLoading: true,
         };
     },
     computed: {
@@ -192,6 +196,7 @@ export default {
     },
     methods: {
         async shiftList() {
+            this.isLoading = true;
             const query = {
                 q: this.$store.state.client.q,
                 page: this.$store.state.pagination.page,
@@ -218,6 +223,9 @@ export default {
                             Shifts: `${item.time_in} to ${item.time_out}`
                         };
                     });
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         addShift() {

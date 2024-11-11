@@ -1,5 +1,5 @@
 <template>
-    <div class="pt-20">
+    <div class="">
       <transition leave-active-class="duration-200">
         <div v-if="show" class="fixed inset-0 overflow-y-auto z-50 flex justify-center items-center">
           <transition

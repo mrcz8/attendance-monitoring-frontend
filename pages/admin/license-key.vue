@@ -12,6 +12,7 @@
                 Generate License
             </Button>
         </div>
+        <isLoading v-if="isLoading" />
         <Table :tableHeader="myHeader" :tableData="myData">
             <template v-slot:action-buttons="{ item }">
                 <div class="items-center space-x-3.5 relative">
@@ -71,6 +72,7 @@ import SuccessButton from '../../components/Buttons/SuccessButton.vue';
 import DropDownButton from '../../components/Buttons/DropDownButton.vue';
 import Modal from '../../components/Modal.vue';
 import Pagination from '../../components/Pagination/Pagination.vue';
+import isLoading from '../../components/isLoading.vue';
 
 export default {
     components: {
@@ -81,7 +83,8 @@ export default {
         SuccessButton,
         DropDownButton,
         Modal,
-        Pagination
+        Pagination,
+        isLoading
     },
     layout: 'default',
     data() {
@@ -97,6 +100,7 @@ export default {
                 'Status',
             ],
             myData: [],
+            isLoading: true,
         };
     },
     computed: {
@@ -118,6 +122,7 @@ export default {
     },
     methods: {
         async licenseList() {
+            this.isLoading = true;
             const query = {
                 page: this.$store.state.pagination.page,
             };
@@ -147,6 +152,9 @@ export default {
                             : 'bg-success text-white rounded-2xl flex justify-center items-center w-30 px-2 py-1',
                         };
                     });
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         async generateLicense(){

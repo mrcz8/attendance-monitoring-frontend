@@ -20,6 +20,7 @@
                 ></SelectInput>
             </div>
         </div>
+        <isLoading v-if="isLoading" />
         <div v-if="hasAttendanceRecords" class="card rounded-md border border-stroke bg-white shadow-md">
             <div class="card-body p-5">
                 <div class="overflow-x-auto">
@@ -113,13 +114,15 @@ import SuccessButton from '../../components/Buttons/SuccessButton.vue';
 import InputText from '../../components/Forms/InputText.vue';
 import EmptyData from '../../components/EmptyData.vue';
 import SelectInput from '../../components/Forms/SelectInput.vue';
+import isLoading from '../../components/isLoading.vue';
 
 export default {
     components: {
         SuccessButton,
         InputText,
         EmptyData,
-        SelectInput
+        SelectInput,
+        isLoading
     },
     layout: 'default',
     data() {
@@ -146,6 +149,7 @@ export default {
                 { value: 11, text: 'November' },
                 { value: 12, text: 'December' },
             ],
+            isLoading: true,
         };
     },
     mounted() {
@@ -179,6 +183,7 @@ export default {
     },
     methods: {
         async attandanceSheet(){
+            this.isLoading = true;
             const query = {
                 month: this.filterMonth,
                 year: this.filterYear,
@@ -209,6 +214,9 @@ export default {
                     });
 
                     this.dates = Array.from(datesSet).sort();
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
 
