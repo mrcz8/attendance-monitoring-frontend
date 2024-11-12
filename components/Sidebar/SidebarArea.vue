@@ -113,6 +113,11 @@ export default {
                 items.push(
                     {
                         icon: '',
+                        label: 'Dashboard',
+                        route: '/dashboard',
+                    },
+                    {
+                        icon: '',
                         label: 'Employees',
                         route: '/employees',
                     },

@@ -68,7 +68,7 @@ export default {
 
                         if (response.data.user.role === 'admin') {
                             if (response.data.user.hasLicenseKey) {
-                                this.$router.push('/employees');
+                                this.$router.push('/dashboard');
                             } else {
                                 this.$router.push('/onboarding');
                             }
