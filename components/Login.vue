@@ -76,7 +76,7 @@ export default {
                             this.$router.push('/admin');
                         }
                     } else {
-                        console.log('not logged in');
+                        this.$toast.error('These credentials do not match our records');
                     }
                 })
                 .catch((err) => {
@@ -87,7 +87,7 @@ export default {
                 console.log(err)
             });
         } else {
-            console.log('email password must not empty')
+            this.$toast.warning('Email and Password must not empty');
         }
         },
         isFormEmpty() {
