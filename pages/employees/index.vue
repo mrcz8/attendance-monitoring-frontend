@@ -7,6 +7,7 @@
         </div>
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <SuccessButton
+            v-if="this.myData.length > 0"
             type="button"
             :isButton="true"
             @click="generateSchedule"

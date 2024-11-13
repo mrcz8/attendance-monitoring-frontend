@@ -152,14 +152,7 @@ export default {
                 {
                     icon: '',
                     label: 'Profile',
-                    route: '#',
-                    children: [
-                        {
-                            label: 'Settings',
-                            route: '#',
-                            icon: '',
-                        },
-                    ]
+                    route: '/profile',
                 }
             )
 
